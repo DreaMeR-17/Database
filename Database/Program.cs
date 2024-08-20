@@ -33,8 +33,8 @@ namespace Database
                 switch (userInput)
                 {
                     case CommandAddPlayer:
-                        Player player = new Player();
-                        database.AddPlayer(player);
+                        //Player player = new Player();
+                        database.AddPlayer();
                         break;
 
                     case CommandRemovePlayer:
@@ -69,21 +69,20 @@ namespace Database
     {
         private Dictionary<string, Player> _player = new Dictionary<string, Player>();
 
-        public void AddPlayer(Player player)
+        public void AddPlayer()
         {
             Console.Clear();
 
             Console.WriteLine("Напишите имя игрока: ");
-            player.SetName(Console.ReadLine());
+            string name =  (Console.ReadLine());
 
             Console.WriteLine("Напишите уникальный номер игрока: ");
-            SetNumber(player);
+            string number = (Console.ReadLine());
 
             Console.WriteLine("Введите уровень игрока: ");
-            player.SetLevel(Console.ReadLine());
+            string level = (Console.ReadLine());
 
-            Console.WriteLine("Напишите статус игрока(Забанен | Не забанен): ");
-            AddBanInfo(player);
+            Player player = new Player(name, number, level);
 
             _player.Add(player.Number, player);
 
@@ -169,26 +168,6 @@ namespace Database
             Console.Clear();
         }
 
-        public void SetNumber(Player player)
-        {
-            bool isNumberCorrect = false;
-
-            while (isNumberCorrect == false)
-            {
-                string userInput = Console.ReadLine();
-
-                if (int.TryParse(userInput, out _))
-                {
-                    player.SetNumber(userInput);
-                    isNumberCorrect = true;
-                }
-                else
-                {
-                    Console.WriteLine("Неверный номер.");
-                }
-            }
-        }
-
         public void AddBanInfo(Player player)
         {
             string banned = "Забанен";
@@ -224,26 +203,12 @@ namespace Database
         public string Level { get; private set; }
         public bool IsBanned { get; private set; }
 
-        //public Player(string number, string name, string level)
-        //{
-        //    Number = number;
-        //    Name = name;
-        //    Level = level;
-        //}
-
-        public void SetNumber(string number)
+        public Player(string name, string number, string level)
         {
             Number = number;
-        }
-
-        public void SetName(string name)
-        {
             Name = name;
-        }
-
-        public void SetLevel(string level)
-        {
             Level = level;
+            IsBanned = false;
         }
 
         public void Ban()
