@@ -67,7 +67,7 @@ namespace Database
 
     class Database
     {
-        private Dictionary<string, Player> _playerInfo = new Dictionary<string, Player>();
+        private Dictionary<string, Player> _player = new Dictionary<string, Player>();
 
         public void AddPlayer(Player player)
         {
@@ -85,7 +85,7 @@ namespace Database
             Console.WriteLine("Напишите статус игрока(Забанен | Не забанен): ");
             AddBanInfo(player);
 
-            _playerInfo.Add(player.Number, player);
+            _player.Add(player.Number, player);
 
             Console.Clear();
         }
@@ -97,9 +97,9 @@ namespace Database
             Console.WriteLine("Напишите номер игрока которого хотите удалить:");
             string userInput = Console.ReadLine();
 
-            if (_playerInfo.ContainsKey(userInput))
+            if (_player.ContainsKey(userInput))
             {
-                _playerInfo.Remove(userInput);
+                _player.Remove(userInput);
                 Console.WriteLine($"Игрок под номером {userInput} был удален");
             }
             else
@@ -118,9 +118,9 @@ namespace Database
             Console.WriteLine("Введите номер игрока:");
             string userInput = Console.ReadLine();
 
-            if (_playerInfo.ContainsKey(userInput))
+            if (_player.ContainsKey(userInput))
             {
-                _playerInfo[userInput].Ban();
+                _player[userInput].Ban();
                 Console.WriteLine($"Игрок под номером {userInput} был забанен");
             }
             else
@@ -139,9 +139,9 @@ namespace Database
             Console.WriteLine("Введите номер игрока:");
             string userInput = Console.ReadLine();
 
-            if (_playerInfo.ContainsKey(userInput))
+            if (_player.ContainsKey(userInput))
             {
-                _playerInfo[userInput].Unban();
+                _player[userInput].Unban();
                 Console.WriteLine($"Игрок под номером {userInput} был разбанен");
             }
             else
@@ -157,13 +157,14 @@ namespace Database
         {
             Console.Clear();
 
-            foreach (var player in _playerInfo.Values)
+            foreach (var player in _player.Values)
             {
                 Console.WriteLine($"Номер: {player.Number}, его имя: {player.Name}, уровень игрока: {player.Level}, " +
                                     $"состояние аккаунта игрока: {(player.IsBanned ? "Забанен" : "Не забанен" )}");
 
                 Console.WriteLine();
             }
+
             Console.ReadKey();
             Console.Clear();
         }
@@ -172,7 +173,7 @@ namespace Database
         {
             bool isNumberCorrect = false;
 
-            while (!isNumberCorrect)
+            while (isNumberCorrect == false)
             {
                 string userInput = Console.ReadLine();
 
@@ -194,7 +195,7 @@ namespace Database
             string notBanned = "Не забанен";
             bool isVerificationDone = false;
 
-            while (!isVerificationDone)
+            while (isVerificationDone == false)
             {
                 string userInputBann = Console.ReadLine();
 
@@ -222,6 +223,13 @@ namespace Database
         public string Name { get; private set; }
         public string Level { get; private set; }
         public bool IsBanned { get; private set; }
+
+        //public Player(string number, string name, string level)
+        //{
+        //    Number = number;
+        //    Name = name;
+        //    Level = level;
+        //}
 
         public void SetNumber(string number)
         {
