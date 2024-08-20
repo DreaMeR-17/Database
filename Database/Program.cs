@@ -33,7 +33,6 @@ namespace Database
                 switch (userInput)
                 {
                     case CommandAddPlayer:
-                        //Player player = new Player();
                         database.AddPlayer();
                         break;
 
