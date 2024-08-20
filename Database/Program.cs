@@ -7,16 +7,16 @@ namespace Database
     {
         static void Main(string[] args)
         {
-            Database database = new Database();
-
-            bool isWork = true;
-
             const string CommandAddPlayer = "1";
             const string CommandRemovePlayer = "2";
             const string CommandBannPlayer = "3";
             const string CommandUnbannPlayer = "4";
             const string CommandShowPlayers = "5";
             const string CommandQuit = "0";
+
+            Database database = new Database();
+
+            bool isWork = true;
 
             while (isWork)
             {
@@ -57,7 +57,7 @@ namespace Database
                         break;
 
                     default:
-                        Console.WriteLine("Нет такого выбора в списке, попробуйте ещё раз.");                        
+                        Console.WriteLine("Нет такого выбора в списке, попробуйте ещё раз.");
                         break;
                 }
             }
@@ -66,22 +66,24 @@ namespace Database
 
     class Database
     {
-        private Dictionary<string, Player> _player = new Dictionary<string, Player>();
+        private Dictionary<int, Player> _player = new Dictionary<int, Player>();
 
         public void AddPlayer()
         {
             Console.Clear();
 
             Console.WriteLine("Напишите имя игрока: ");
-            string name =  (Console.ReadLine());
-
-            Console.WriteLine("Напишите уникальный номер игрока: ");
-            string number = (Console.ReadLine());
+            string name = (Console.ReadLine());
 
             Console.WriteLine("Введите уровень игрока: ");
             string level = (Console.ReadLine());
 
-            Player player = new Player(name, number, level);
+            Player player = new Player(name, level);
+
+            while (_player.ContainsKey(player.Number) == true)
+            {
+                player = new Player(name, level);
+            }
 
             _player.Add(player.Number, player);
 
@@ -93,16 +95,16 @@ namespace Database
             Console.Clear();
 
             Console.WriteLine("Напишите номер игрока которого хотите удалить:");
-            string userInput = Console.ReadLine();
+            int number = GetNumber();
 
-            if (_player.ContainsKey(userInput))
+            if (_player.ContainsKey(number))
             {
-                _player.Remove(userInput);
-                Console.WriteLine($"Игрок под номером {userInput} был удален");
+                _player.Remove(number);
+                Console.WriteLine($"Игрок под номером {number} был удален");
             }
             else
             {
-                Console.WriteLine($"Игрок с номером {userInput} не найден");
+                Console.WriteLine($"Игрок с номером {number} не найден");
             }
 
             Console.ReadKey();
@@ -113,17 +115,11 @@ namespace Database
         {
             Console.Clear();
 
-            Console.WriteLine("Введите номер игрока:");
-            string userInput = Console.ReadLine();
+            if (TryGetPlayer(out Player gettedPlayer) == true)
+            {
+                gettedPlayer.Ban();
 
-            if (_player.ContainsKey(userInput))
-            {
-                _player[userInput].Ban();
-                Console.WriteLine($"Игрок под номером {userInput} был забанен");
-            }
-            else
-            {
-                Console.WriteLine("Игрок с данным номером не найден");
+                Console.WriteLine($"Игрок с номером {gettedPlayer.Number} забанен.");
             }
 
             Console.ReadKey();
@@ -134,17 +130,11 @@ namespace Database
         {
             Console.Clear();
 
-            Console.WriteLine("Введите номер игрока:");
-            string userInput = Console.ReadLine();
+            if (TryGetPlayer(out Player gettedPlayer) == true)
+            {
+                gettedPlayer.Unban();
 
-            if (_player.ContainsKey(userInput))
-            {
-                _player[userInput].Unban();
-                Console.WriteLine($"Игрок под номером {userInput} был разбанен");
-            }
-            else
-            {
-                Console.WriteLine("Игрок с данным номером не найден");
+                Console.WriteLine($"Игрок с номером {gettedPlayer.Number} раззабанен.");
             }
 
             Console.ReadKey();
@@ -158,7 +148,7 @@ namespace Database
             foreach (var player in _player.Values)
             {
                 Console.WriteLine($"Номер: {player.Number}, его имя: {player.Name}, уровень игрока: {player.Level}, " +
-                                    $"состояние аккаунта игрока: {(player.IsBanned ? "Забанен" : "Не забанен" )}");
+                                    $"состояние аккаунта игрока: {(player.IsBanned ? "Забанен" : "Не забанен")}");
 
                 Console.WriteLine();
             }
@@ -167,48 +157,68 @@ namespace Database
             Console.Clear();
         }
 
-        public void AddBanInfo(Player player)
+        private bool TryGetPlayer(out Player gettedPlayer)
         {
-            string banned = "Забанен";
-            string notBanned = "Не забанен";
-            bool isVerificationDone = false;
-
-            while (isVerificationDone == false)
+            if (_player.Count != 0)
             {
-                string userInputBann = Console.ReadLine();
+                Console.WriteLine("Введите номер игрока :");
 
-                if (userInputBann == banned)
+                int number = GetNumber();
+
+                if (_player.ContainsKey(number))
                 {
-                    player.Ban();
-                    isVerificationDone = true;
-                }
-                else if (userInputBann == notBanned)
-                {
-                    player.Unban();
-                    isVerificationDone = true;
+                    gettedPlayer = _player[number];
+
+                    return true;
                 }
                 else
                 {
-                    Console.WriteLine("Нет такой команды, попробуйте ещё раз");
+                    Console.WriteLine($"Игрок с номером {number} не найден.");
+                    gettedPlayer = null;
+
+                    return false;
                 }
             }
+            else
+            {
+                Console.WriteLine("База данных пуста.");
+                gettedPlayer = null;
+
+                return false;
+            }
+        }
+
+        private int GetNumber()
+        {
+            int number = 0;
+            string userInput = Console.ReadLine();
+
+            while (int.TryParse(userInput, out number) != true)
+            {
+                Console.Write($"Неверный формат {userInput}.\nВведите целочисленное значение:");
+                userInput = Console.ReadLine();
+            }
+
+            return number;
         }
     }
 
     class Player
     {
-        public string Number { get; private set; }
-        public string Name { get; private set; }
-        public string Level { get; private set; }
-        public bool IsBanned { get; private set; }
+        private static int s_number = 0;
 
-        public Player(string name, string number, string level)
+        public Player(string name, string level)
         {
-            Number = number;
+            Number = ++s_number;
             Name = name;
             Level = level;
             IsBanned = false;
         }
+
+        public int Number { get; private set; }
+        public string Name { get; private set; }
+        public string Level { get; private set; }
+        public bool IsBanned { get; private set; }
 
         public void Ban()
         {
